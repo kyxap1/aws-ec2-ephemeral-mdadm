@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 set -e
 # Usage:
-#   DEVICES=(/dev/xvdf /dev/xvdg) MOUNTPOINT="/var/lib/postgresql" \
+#   DEVICES=(/dev/xvd{f..i}) MOUNTPOINT="/var/lib/postgresql" \
 #   MOUNTOPTS="relatime,nofail" CONF="/etc/mdadm/mdadm.conf" LABEL="PGDATA" \
 #   MD="/dev/md127" FS="xfs" RAID="ebs" /path/to/mdadm.sh
 # Opts:
 #   FS=<xfs|ext4>
 #   RAID=<ebs|ephemeral|noraid>
 
-DEVICES=(${DEVICES[@]:-/dev/xvdb /dev/xvdc})
-MOUNTPOINT="${MOUNTPOINT:-/var/lib/cassandra/data}"
-MOUNTOPTS="${MOUNTOPTS:-relatime,nofail}"
+DEVICES=(${DEVICES[@]:?})
+MOUNTPOINT="${MOUNTPOINT:?}"
+MOUNTOPTS="${MOUNTOPTS:-nobootwait,nofail}"
 CONF="${CONF:-/etc/mdadm/mdadm.conf}"
-LABEL="${LABEL:-CASSDATA}"
+LABEL="${LABEL:?}"
 MD="${MD:-/dev/md127}"
 FS="${FS:-xfs}"
-RAID="${RAID:-ephemeral}"
+RAID="${RAID:-ebs}"
 
 function prepareenv  { mkdir -p "${CONF%/*}"; mkdir -p "${MOUNTPOINT}"; }
 function createconf  { echo "DEVICE ${DEVICES[@]}" | tee ${CONF}; mdadm --detail --scan | tee -a ${CONF}; }
