@@ -9,7 +9,8 @@
 set -o pipefail
 set -eu
 
-trap "{ echo -n [\$\$] \${BASH_COMMAND[*]}; [[ \$? -eq 2 ]] || usage; }" INT TERM EXIT
+# temporary disable
+#trap "{ echo -n [\$\$] \${BASH_COMMAND[*]}; [[ \$? -eq 2 ]] || usage; }" INT TERM EXIT
 
 function usage {
 cat <<EOF
@@ -66,8 +67,8 @@ function destroyconf { [[ -s ${CONF} ]] || return 0 && rm -rf "${CONF%/*}"; }
 function lookupdev   { printf "%s\n" "${DEVICES[@]##*/}" | grep -cwof - /proc/partitions; }
 function statusdev   { [[ -s ${CONF} ]] && { [[ -b ${MD} ]] || return 0; }; exammd; }
 function validatedev { if n=$( lookupdev ); then [[ ${n} -eq ${#DEVICES[@]} ]] || exit 1; fi; }
-function addfstab    { echo "LABEL=${LABEL} ${MOUNTPOINT} ${FS} ${MOUNTOPTS} 0 0" | tee -a /etc/fstab >/dev/null; }
-function delfstab    { grep -v "LABEL=${LABEL} ${MOUNTPOINT} ${FS} ${MOUNTOPTS} 0 0" /etc/fstab > /tmp/fstab; mv -f /tmp/fstab /etc/fstab; }
+function addfstab    { echo "LABEL=${LABEL} ${MOUNTPOINT} auto ${MOUNTOPTS} 0 0" | tee -a /etc/fstab >/dev/null; }
+function delfstab    { grep -v "LABEL=${LABEL} ${MOUNTPOINT} auto ${MOUNTOPTS} 0 0" /etc/fstab > /tmp/fstab; mv -f /tmp/fstab /etc/fstab; }
 function createlabel { [[ ${FS} == ext[234] ]] && tune2fs -L ${LABEL} ${MD}; [[ ${FS} == xfs ]] && xfs_admin -L ${LABEL} ${MD}; }
 function finish      { exit 0; }
 
@@ -76,5 +77,6 @@ CMD=${@:-create}
 [[ ${CMD}  == status  ]] && { statusdev && finish; }
 [[ ${CMD}  == create  ]] && { validatedev; prepareenv; createmd; createfs; createlabel; createconf; addfstab; mountfs && finish; }
 [[ ${CMD}  == destroy ]] && { umountfs; delfstab; destroyconf; stopmd; destroymd && finish; }
+[[ ${CMD}  == help    ]] && { usage && finish; }
 
 exit 0
