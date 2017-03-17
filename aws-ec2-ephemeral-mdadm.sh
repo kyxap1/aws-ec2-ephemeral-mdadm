@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+#===============================================================================
+#   DESCRIPTION: aws-ec2-ephemeral-mdadm.sh
+#        AUTHOR: Aleksandr Kukhar (kyxap), kyxap@kyxap.pro
+#       COMPANY: Fasten.com
+#  ORGANIZATION: Operations
+#       CREATED: 03/17/17 02:13 +0000 UTC
+#===============================================================================
 set -o pipefail
 set -eu
 
