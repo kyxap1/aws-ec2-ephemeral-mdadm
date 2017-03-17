@@ -27,7 +27,10 @@ OPTIONAL
 
 SAMPLE
 
-  DEVICES=\$(echo /dev/xvd{f..i}) MOUNTPOINT=/var/lib/cassandra MOUNTOPTS="nobootwait,nofail" CONF=/etc/mdadm/mdadm.conf LABEL=CASSANDRA MD=/dev/md127 FS=xfs RAID=ebs $0
+DEVICES=\$(echo /dev/xvd{f..i}) MOUNTPOINT=/var/lib/cassandra\
+ MOUNTOPTS="nobootwait,nofail" CONF=/etc/mdadm/mdadm.conf LABEL=CASSANDRA\
+ MD=/dev/md127 FS=xfs RAID=ebs\
+ $0
 
 EOF
 exit 2
