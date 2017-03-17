@@ -1,12 +1,37 @@
 #!/usr/bin/env bash
-set -e
-# Usage:
-#   DEVICES=(/dev/xvd{f..i}) MOUNTPOINT="/var/lib/postgresql" \
-#   MOUNTOPTS="relatime,nofail" CONF="/etc/mdadm/mdadm.conf" LABEL="PGDATA" \
-#   MD="/dev/md127" FS="xfs" RAID="ebs" /path/to/mdadm.sh
-# Opts:
-#   FS=<xfs|ext4>
-#   RAID=<ebs|ephemeral|noraid>
+set -o pipefail
+set -eu
+
+trap "{ echo -n [\$\$] \${BASH_COMMAND[*]}; [[ \$? -eq 2 ]] || usage; }" INT TERM EXIT
+
+function usage {
+cat <<EOF
+
+        Script to create mdadm stripe in AWS EC2 environment
+
+USAGE:  REQUIRED [OPTIONAL] $0
+
+REQUIRED
+
+        DEVICES           devices list          DEVICES="/dev/xvdf /dev/xvdg"
+        MOUNTPOINT        mountpoint            MOUNTPOINT=/var/lib/cassandra
+        LABEL             filesystem label      LABEL=CASSANDRA
+
+OPTIONAL
+
+        MOUNTOPTS         mount options         MOUNTOPTS="nobootwait,nofail"
+        CONF              mdadm configm         CONF=/etc/mdadm/mdadm.conf
+        MD                md device             MD=/dev/md127
+        FS                filesystem type       FS=xfs || ext4
+        RAID              raid category         RAID=ebs || ephemeral | noraid
+
+SAMPLE
+
+  DEVICES=\$(echo /dev/xvd{f..i}) MOUNTPOINT=/var/lib/cassandra MOUNTOPTS="nobootwait,nofail" CONF=/etc/mdadm/mdadm.conf LABEL=CASSANDRA MD=/dev/md127 FS=xfs RAID=ebs $0
+
+EOF
+exit 2
+}
 
 DEVICES=(${DEVICES[@]:?})
 MOUNTPOINT="${MOUNTPOINT:?}"
@@ -41,3 +66,5 @@ CMD=${@:-create}
 [[ ${CMD}  == status  ]] && { statusdev && finish; }
 [[ ${CMD}  == create  ]] && { validatedev; prepareenv; createmd; createfs; createlabel; createconf; addfstab; mountfs && finish; }
 [[ ${CMD}  == destroy ]] && { umountfs; delfstab; destroyconf; stopmd; destroymd && finish; }
+
+exit 0
