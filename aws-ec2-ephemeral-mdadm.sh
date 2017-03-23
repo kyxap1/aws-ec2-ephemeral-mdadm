@@ -41,12 +41,12 @@ MOUNTPOINT="${MOUNTPOINT:?}"
 MOUNTOPTS="${MOUNTOPTS:-nobootwait,nofail}"
 CONF="${CONF:-/etc/mdadm/mdadm.conf}"
 LABEL="${LABEL:?}"
-MD="${MD:-/dev/md127}"
+MD="${MD:-/dev/md0}"
 FS="${FS:-xfs}"
 RAID="${RAID:-ebs}"
 
 function prepareenv  { mkdir -p "${CONF%/*}"; mkdir -p "${MOUNTPOINT}"; }
-function createconf  { echo "DEVICE ${DEVICES[@]}" | tee ${CONF}; mdadm --detail --scan | tee -a ${CONF}; }
+function createconf  { echo "DEVICE ${DEVICES[@]}" | tee -a ${CONF}; mdadm --detail --scan | tee -a ${CONF}; }
 function createfs    { mkfs.${FS} -L ${LABEL} -f ${MD}; }
 function mountfs     { mountpoint -q ${MOUNTPOINT} || mount ${MD} ${MOUNTPOINT}; }
 function umountfs    { mountpoint -q ${MOUNTPOINT} || return 0 && umount ${MOUNTPOINT}; }
